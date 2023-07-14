@@ -67,12 +67,13 @@ class HttpClient(Client):
                  http_proxy: Optional[str] = None,
                  https_proxy: Optional[str] = None,
                  server_host_name: Optional[str] = None,
-                 apply_server_timezone: Optional[Union[str, bool]] = True):
+                 apply_server_timezone: Optional[Union[str, bool]] = True,
+                 path: Optional[str] = None):
         """
         Create an HTTP ClickHouse Connect client
         See clickhouse_connect.get_client for parameters
         """
-        self.url = f'{interface}://{host}:{port}'
+        self.url = f'{interface}://{host}:{port}{path}'
         self.headers = {}
         ch_settings = settings or {}
         self.http = pool_mgr

@@ -67,6 +67,7 @@ def create_client(host: str = None,
     :param server_host_name  This is the server host name that will be checked against a TLS certificate for
       validity.  This option can be used if using an ssh_tunnel or other indirect means to an ClickHouse server
       where the `host` argument refers to the tunnel or proxy and not the actual ClickHouse server
+    :param path The path portion of the URL.  This is useful for connecting to ClickHouse servers behind a reverse proxy
     :return: ClickHouse Connect Client instance
     """
     if dsn:
@@ -75,9 +76,13 @@ def create_client(host: str = None,
         password = password or parsed.password
         host = host or parsed.hostname
         port = port or parsed.port
-        if parsed.path and (not database or database == '__default__'):
-            database = parsed.path[1:].split('/')[0]
-        database = database or parsed.path
+        path_parts = parsed.path[1:].split('/')
+        if path_parts and (not database or database == '__default__'):
+            database = path_parts[-1]
+        if len(path_parts) > 1 and ('path' not in kwargs):
+            path = '/'.join(path_parts[:-1])
+            kwargs.update({'path': '/' + path})
+        database = database or path_parts[-1]
         kwargs.update(dict(parse_qs(parsed.query)))
     use_tls = str(secure).lower() == 'true' or interface == 'https' or (not interface and port in (443, 8443))
     if not host:
